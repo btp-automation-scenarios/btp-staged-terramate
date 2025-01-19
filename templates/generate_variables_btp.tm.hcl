@@ -33,18 +33,6 @@ generate_hcl "_terramate_generated_variables.tf" {
       }
     }
 
-    variable "beta_enabled" {
-      description = "Enable beta features on SAP BTP subaccount"
-      type        = bool
-      default     = tm_ternary(tm_contains(terramate.stack.tags, "dev"), true, false)
-    }
-
-    variable "used_for_production" {
-      description = "Indicates if the subaccount is used for production"
-      type        = bool
-      default     = tm_ternary(tm_contains(terramate.stack.tags, "prod"), true, false)
-    }
-
     variable "project_costcenter" {
       description = "Cost center of the project"
       type        = string

@@ -14,7 +14,7 @@ locals {
   ])
 }
 resource "btp_subaccount" "project_subaccount" {
-  beta_enabled = var.beta_enabled
+  beta_enabled = var.subaccount_stage == "DEV" ? true : false
   labels = {
     "stage" = [
       var.subaccount_stage,
@@ -26,7 +26,7 @@ resource "btp_subaccount" "project_subaccount" {
   name      = local.subaccount_name
   region    = var.subaccount_region
   subdomain = local.subaccount_subdomain
-  usage     = var.used_for_production ? "USED_FOR_PRODUCTION" : "NOT_USED_FOR_PRODUCTION"
+  usage     = var.subaccount_stage == "PROD" ? "USED_FOR_PRODUCTION" : "NOT_USED_FOR_PRODUCTION"
 }
 resource "btp_subaccount_entitlement" "alert_notification_service_standard" {
   plan_name     = "standard"

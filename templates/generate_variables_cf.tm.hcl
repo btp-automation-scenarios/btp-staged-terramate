@@ -1,5 +1,5 @@
 # Only generta ethe variables that are not generated via output sharing
-generate_hcl "_terramate_generated_var_base.tf" {
+generate_hcl "_terramate_generated_var.tf" {
   condition = tm_contains(terramate.stack.tags, "cloudfoundry")
   content {
     variable "project_name" {
@@ -16,6 +16,27 @@ generate_hcl "_terramate_generated_var_base.tf" {
         condition     = contains(["DEV", "TEST", "PROD"], var.subaccount_stage)
         error_message = "Stage must be one of DEV, TEST or PROD"
       }
+    }
+
+    variable "cf_space_supporter" {
+      description = "The Cloud Foundry space supporter"
+      type        = string
+      sensitive   = true
+      default     = ""
+    }
+
+    variable "cf_space_manager" {
+      description = "The Cloud Foundry space manager"
+      type        = string
+      sensitive   = true
+      default     = ""
+    }
+
+    variable "cf_space_developer" {
+      description = "The Cloud Foundry space developer"
+      type        = string
+      sensitive   = true
+      default     = ""
     }
 
   }

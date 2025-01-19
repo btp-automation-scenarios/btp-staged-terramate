@@ -34,16 +34,6 @@ variable "subaccount_stage" {
     error_message = "Stage must be one of DEV, TEST or PROD"
   }
 }
-variable "beta_enabled" {
-  default     = true
-  description = "Enable beta features on SAP BTP subaccount"
-  type        = bool
-}
-variable "used_for_production" {
-  default     = false
-  description = "Indicates if the subaccount is used for production"
-  type        = bool
-}
 variable "project_costcenter" {
   default     = "12345"
   description = "Cost center of the project"

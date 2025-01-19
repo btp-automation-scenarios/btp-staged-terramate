@@ -17,8 +17,8 @@ generate_hcl "_terramate_generated_main.tf" {
       name         = local.subaccount_name
       subdomain    = local.subaccount_subdomain
       region       = var.subaccount_region
-      beta_enabled = var.beta_enabled
-      usage        = var.used_for_production ? "USED_FOR_PRODUCTION" : "NOT_USED_FOR_PRODUCTION"
+      beta_enabled = var.subaccount_stage == "DEV" ? true : false
+      usage        = var.subaccount_stage == "PROD" ? "USED_FOR_PRODUCTION" : "NOT_USED_FOR_PRODUCTION"
       labels = {
         "stage"      = [var.subaccount_stage]
         "costcenter" = [var.project_costcenter]

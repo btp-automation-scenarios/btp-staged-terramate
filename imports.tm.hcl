@@ -19,16 +19,7 @@ import {
   source = "./templates/generate_variables_cf.tm.hcl"
 }
 
-import {
-  source = "./templates/generate_variables_cf_roles1.tm.hcl"
-}
 
 import {
-  source = "./templates/generate_variables_cf_roles2.tm.hcl"
+  source = "./templates/generate_main_cf.tm.hcl"
 }
-
-/*
-import {
-  source = "./templates/generate_main.tm.hcl"
-}
-*/
