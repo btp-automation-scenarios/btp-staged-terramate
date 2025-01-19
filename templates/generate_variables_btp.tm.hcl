@@ -23,16 +23,6 @@ generate_hcl "_terramate_generated_variables.tf" {
       }
     }
 
-    variable "subaccount_stage" {
-      description = "Stage of the subaccount"
-      type        = string
-      default     = tm_upper(terramate.stack.tags[1])
-      validation {
-        condition     = contains(["DEV", "TEST", "PROD"], var.subaccount_stage)
-        error_message = "Stage must be one of DEV, TEST or PROD"
-      }
-    }
-
     variable "project_costcenter" {
       description = "Cost center of the project"
       type        = string

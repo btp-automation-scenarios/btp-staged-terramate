@@ -5,19 +5,19 @@ resource "random_uuid" "uuid" {
 data "btp_globalaccount" "this" {
 }
 locals {
-  service_name_prefix = lower(replace("${var.subaccount_stage}-${var.project_name}", " ", "-"))
+  service_name_prefix = lower(replace("DEV-${var.project_name}", " ", "-"))
   subaccount_cf_org   = local.subaccount_subdomain
-  subaccount_name     = "${var.subaccount_stage} ${var.project_name} DIR"
+  subaccount_name     = "DEV ${var.project_name} DIR"
   subaccount_subdomain = join("-", [
-    lower(replace("${var.subaccount_stage}-${var.project_name}", " ", "-")),
+    lower(replace("DEV-${var.project_name}", " ", "-")),
     random_uuid.uuid.result,
   ])
 }
 resource "btp_subaccount" "project_subaccount" {
-  beta_enabled = var.subaccount_stage == "DEV" ? true : false
+  beta_enabled = true
   labels = {
     "stage" = [
-      var.subaccount_stage,
+      "DEV",
     ]
     "costcenter" = [
       var.project_costcenter,
@@ -26,7 +26,7 @@ resource "btp_subaccount" "project_subaccount" {
   name      = local.subaccount_name
   region    = var.subaccount_region
   subdomain = local.subaccount_subdomain
-  usage     = var.subaccount_stage == "PROD" ? "USED_FOR_PRODUCTION" : "NOT_USED_FOR_PRODUCTION"
+  usage     = "NOT_USED_FOR_PRODUCTION"
 }
 resource "btp_subaccount_entitlement" "alert_notification_service_standard" {
   plan_name     = "standard"

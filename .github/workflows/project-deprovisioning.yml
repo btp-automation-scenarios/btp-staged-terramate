@@ -1,0 +1,87 @@
+name: Project Deprovisioning
+
+on:
+  workflow_dispatch:
+    inputs:
+      project-name:
+        description: 'Name of the project'
+        required: true
+      cost-center:
+        description: 'Cost center'
+        required: true
+        default: '12345'
+      subaccount-region:
+        description: 'Region of the subaccounts'
+        required: true
+        default: 'us10'
+      space-responsible:
+        description: 'Email of the responsible for the CF space'
+        required: true
+        default: 'christian.lechner@sap.com'
+
+jobs:
+###
+# DEVELOPMENT
+###
+  destroy_subaccount_dev:
+    concurrency:
+     group: dev
+     cancel-in-progress: true
+
+    name: Destroy DEV Subaccount
+    runs-on: ubuntu-latest
+    environment: dev
+    env:
+      STAGE: dev
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+          terraform_version: latest
+
+      - name: Setup Terramate
+        uses: hashicorp/setup-terraform@v2
+        with:
+          use_wrapper: false
+          version: latest
+
+      - name: Init Terraform for Dev stack
+        shell: bash
+        run: |
+          export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
+          terramate run -X --tags ${{ env.STAGE }} terraform init \
+             -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
+             -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
+             -backend-config="container_name=${{ secrets.CONTAINER_NAME }}" \
+             -no-color
+
+      - name: Transfer BTP output values
+        id: terraform_output_btp
+        shell: bash
+        run: |
+          export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
+          terramate run -X --tags btp:${{ env.STAGE }} terraform output -json > output_btp.json
+          echo "cf_api_url=$(jq -r '.cf_api_url.value' output_btp.json)" >> $GITHUB_OUTPUT
+          echo "cf_org_id=$(jq -r '.cf_org_id.value' output_btp.json)" >> $GITHUB_OUTPUT
+          echo "subaccount_url=$(jq -r '.subaccount_url.value' output_btp.json)" >> $GITHUB_OUTPUT
+
+      - name: Terraform Destroy for CF
+        shell: bash
+        run: |
+            export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
+            export BTP_USERNAME=${{ secrets.BTP_USERNAME }}
+            export BTP_PASSWORD=${{ secrets.BTP_PASSWORD }}
+            export CF_USER=${{ secrets.BTP_USERNAME }}
+            export CF_PASSWORD=${{ secrets.BTP_PASSWORD }}
+            export TF_VAR_globalaccount=${{ secrets.GLOBALACCOUNT }}
+            export TF_VAR_project_name='${{ steps.output_issue_data.outputs.project-name }}'
+            export TF_VAR_subaccount_region=${{ steps.output_issue_data.outputs.subaccount-region }}
+            export TF_VAR_project_costcenter=${{ steps.output_issue_data.outputs.cost-center }}
+            export TF_VAR_cf_space_manager=${{ github.event.inputs.space-responsible }}
+            export TF_VAR_cf_space_developer=${{ github.event.inputs.space-responsible }}
+            export TF_VAR_cf_space_responsible=${{ github.event.inputs.space-responsible }}
+            terramate script run --tags ${{ env.STAGE }} -X --reverse teardown

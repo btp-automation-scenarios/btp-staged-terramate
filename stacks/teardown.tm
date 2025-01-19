@@ -4,7 +4,7 @@ script "teardown" {
     description = "Destroy Terraform setup."
 
     commands = [
-      ["terraform", "destroy", "-input=false", "-auto-approve", "-lock-timeout=5m", {
+      ["terraform", "destroy", "-auto-approve", "-no-color", {
         enable_sharing = true
         mock_on_fail   = true
       }],

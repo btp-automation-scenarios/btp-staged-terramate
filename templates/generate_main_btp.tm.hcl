@@ -7,9 +7,9 @@ generate_hcl "_terramate_generated_main.tf" {
     data "btp_globalaccount" "this" {}
 
     locals {
-      subaccount_name      = "${var.subaccount_stage} ${var.project_name} DIR"
-      subaccount_subdomain = join("-", [lower(replace("${var.subaccount_stage}-${var.project_name}", " ", "-")), random_uuid.uuid.result])
-      service_name_prefix  = lower(replace("${var.subaccount_stage}-${var.project_name}", " ", "-"))
+      subaccount_name      = "${tm_upper(terramate.stack.tags[1])} ${var.project_name} DIR"
+      subaccount_subdomain = join("-", [lower(replace("${tm_upper(terramate.stack.tags[1])}-${var.project_name}", " ", "-")), random_uuid.uuid.result])
+      service_name_prefix  = lower(replace("${tm_upper(terramate.stack.tags[1])}-${var.project_name}", " ", "-"))
       subaccount_cf_org    = local.subaccount_subdomain
     }
 
@@ -17,10 +17,10 @@ generate_hcl "_terramate_generated_main.tf" {
       name         = local.subaccount_name
       subdomain    = local.subaccount_subdomain
       region       = var.subaccount_region
-      beta_enabled = var.subaccount_stage == "DEV" ? true : false
-      usage        = var.subaccount_stage == "PROD" ? "USED_FOR_PRODUCTION" : "NOT_USED_FOR_PRODUCTION"
+      beta_enabled = tm_ternary(terramate.stack.tags[1] == "dev", true, false)
+      usage        = tm_ternary(terramate.stack.tags[1] == "prod", "USED_FOR_PRODUCTION", "NOT_USED_FOR_PRODUCTION")
       labels = {
-        "stage"      = [var.subaccount_stage]
+        "stage"      = [tm_upper(terramate.stack.tags[1])]
         "costcenter" = [var.project_costcenter]
       }
     }

@@ -1,0 +1,36 @@
+name: 🛠️ Subaccount Request
+description: File a request to create a multi-stage project subaccount
+title: "[ACCOUNT REQUEST]"
+labels: [account-request]
+body:
+  - type: input
+    id: project-name
+    attributes:
+      label: Project Name
+      description: Please enter the name of the project.
+    validations:
+      required: true
+  - type: input
+    id: cost-center
+    attributes:
+      label: Cost Center
+      description: Please enter the cost center of the project.
+    validations:
+      required: true
+  - type: dropdown
+    id: subaccount-region
+    attributes:
+      label: Subaccount Region
+      description: Please select the region of the subaccount.
+      options:
+        - us10
+        - eu10
+    validations:
+      required: true
+  - type: input
+    id: space-responsible
+    attributes:
+      label: Cloud Foundry Space Responsible
+      description: Please enter the email of the responsible for the CF space.
+    validations:
+      required: true

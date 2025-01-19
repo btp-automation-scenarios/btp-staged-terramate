@@ -21,19 +21,6 @@ variable "subaccount_region" {
     error_message = "Region must be one of us10 or eu10"
   }
 }
-variable "subaccount_stage" {
-  default     = "PROD"
-  description = "Stage of the subaccount"
-  type        = string
-  validation {
-    condition = contains([
-      "DEV",
-      "TEST",
-      "PROD",
-    ], var.subaccount_stage)
-    error_message = "Stage must be one of DEV, TEST or PROD"
-  }
-}
 variable "project_costcenter" {
   default     = "12345"
   description = "Cost center of the project"

@@ -8,7 +8,7 @@ generate_hcl "_terramate_generated_main.tf" {
     }
 
     resource "cloudfoundry_space_role" "space_manager" {
-      count    = var.subaccount_stage == "PROD" ? 0 : 1
+      count    = tm_ternary(terramate.stack.tags[1] == "prod", 0, 1)
       username = var.cf_space_manager
       type     = "space_manager"
       space    = cloudfoundry_space.project_space.id
@@ -16,7 +16,7 @@ generate_hcl "_terramate_generated_main.tf" {
     }
 
     resource "cloudfoundry_space_role" "space_developer" {
-      count    = var.subaccount_stage == "PROD" ? 0 : 1
+      count    = tm_ternary(terramate.stack.tags[1] == "prod", 0, 1)
       username = var.cf_space_developer
       type     = "space_developer"
       space    = cloudfoundry_space.project_space.id
@@ -24,7 +24,7 @@ generate_hcl "_terramate_generated_main.tf" {
     }
 
     resource "cloudfoundry_space_role" "space_supporter" {
-      count    = var.subaccount_stage == "PROD" ? 1 : 0
+      count    = tm_ternary(terramate.stack.tags[1] == "prod", 1, 0)
       username = var.cf_space_supporter
       type     = "space_supporter"
       space    = cloudfoundry_space.project_space.id
