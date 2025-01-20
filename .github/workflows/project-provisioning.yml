@@ -45,14 +45,14 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-          use_wrapper: false
-          version: latest
+          terraform_wrapper: false
+          terraform_version: latest
 
       - name: Setup Terramate
         uses: terramate-io/terramate-action@v2
         with:
-          terraform_wrapper: false
-          terraform_version: latest
+          use_wrapper: false
+          version: latest
 
       - name: Init Terraform for DEV stack
         shell: bash
