@@ -75,3 +75,116 @@ jobs:
             export TF_VAR_cf_space_developer=${{ github.event.inputs.space-responsible }}
             export TF_VAR_cf_space_responsible=${{ github.event.inputs.space-responsible }}
             terramate script run --tags ${{ env.STAGE }} -X --reverse teardown
+
+
+###
+# TESTING
+###
+  destroy_subaccount_test:
+    concurrency:
+     group: test
+     cancel-in-progress: true
+
+    name: Destroy TEST Subaccount
+    runs-on: ubuntu-latest
+    environment: test
+    env:
+      STAGE: test
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+          terraform_version: latest
+
+      - name: Setup Terramate
+        uses: terramate-io/terramate-action@v2
+        with:
+          use_wrapper: false
+          version: latest
+
+      - name: Init Terraform for TEST stack
+        shell: bash
+        run: |
+          export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
+          terramate run -X --tags ${{ env.STAGE }} terraform init \
+             -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
+             -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
+             -backend-config="container_name=${{ secrets.CONTAINER_NAME }}" \
+             -no-color
+
+      - name: Terraform Destroy for TEST stack
+        shell: bash
+        run: |
+            export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
+            export BTP_USERNAME=${{ secrets.BTP_USERNAME }}
+            export BTP_PASSWORD=${{ secrets.BTP_PASSWORD }}
+            export CF_USER=${{ secrets.BTP_USERNAME }}
+            export CF_PASSWORD=${{ secrets.BTP_PASSWORD }}
+            export TF_VAR_globalaccount=${{ secrets.GLOBALACCOUNT }}
+            export TF_VAR_project_name='${{ github.event.inputs.project-name }}'
+            export TF_VAR_subaccount_region=${{ github.event.inputs.subaccount-region }}
+            export TF_VAR_project_costcenter=${{ github.event.inputs.cost-center }}
+            export TF_VAR_cf_space_manager=${{ github.event.inputs.space-responsible }}
+            export TF_VAR_cf_space_developer=${{ github.event.inputs.space-responsible }}
+            export TF_VAR_cf_space_responsible=${{ github.event.inputs.space-responsible }}
+            terramate script run --tags ${{ env.STAGE }} -X --reverse teardown
+
+###
+# PRODUCTION
+###
+  destroy_subaccount_prod:
+    concurrency:
+     group: prod
+     cancel-in-progress: true
+
+    name: Destroy PROD Subaccount
+    runs-on: ubuntu-latest
+    environment: prod
+    env:
+      STAGE: prod
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+          terraform_version: latest
+
+      - name: Setup Terramate
+        uses: terramate-io/terramate-action@v2
+        with:
+          use_wrapper: false
+          version: latest
+
+      - name: Init Terraform for PROD stack
+        shell: bash
+        run: |
+          export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
+          terramate run -X --tags ${{ env.STAGE }} terraform init \
+             -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
+             -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
+             -backend-config="container_name=${{ secrets.CONTAINER_NAME }}" \
+             -no-color
+
+      - name: Terraform Destroy for PROD stack
+        shell: bash
+        run: |
+            export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
+            export BTP_USERNAME=${{ secrets.BTP_USERNAME }}
+            export BTP_PASSWORD=${{ secrets.BTP_PASSWORD }}
+            export CF_USER=${{ secrets.BTP_USERNAME }}
+            export CF_PASSWORD=${{ secrets.BTP_PASSWORD }}
+            export TF_VAR_globalaccount=${{ secrets.GLOBALACCOUNT }}
+            export TF_VAR_project_name='${{ github.event.inputs.project-name }}'
+            export TF_VAR_subaccount_region=${{ github.event.inputs.subaccount-region }}
+            export TF_VAR_project_costcenter=${{ github.event.inputs.cost-center }}
+            export TF_VAR_cf_space_manager=${{ github.event.inputs.space-responsible }}
+            export TF_VAR_cf_space_developer=${{ github.event.inputs.space-responsible }}
+            export TF_VAR_cf_space_responsible=${{ github.event.inputs.space-responsible }}
+            terramate script run --tags ${{ env.STAGE }} -X --reverse teardown

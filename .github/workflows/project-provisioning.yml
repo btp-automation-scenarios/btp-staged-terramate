@@ -8,14 +8,14 @@ permissions:
   issues: write
 
 jobs:
-  create_subaccount_dev:
-    concurrency:
-     group: dev
-     cancel-in-progress: true
 
 ###
 # DEVELOPMENT
 ###
+  create_subaccount_dev:
+    concurrency:
+     group: dev
+     cancel-in-progress: true
     name: Create DEV Subaccount for Project
     if: ${{ !github.event.issue.pull_request }} && contains(github.event.issue.body, 'Project Name')
     runs-on: ubuntu-latest
@@ -107,3 +107,207 @@ jobs:
               CF Space URL - Stage DEV: ${{ steps.terraform_output.outputs.cf_space_url }}
 
             🚀 Build some awesome apps with it!
+
+###
+# TESTING
+###
+  create_subaccount_test:
+    needs: create_subaccount_dev
+    concurrency:
+     group: test
+     cancel-in-progress: true
+
+    name: Create TEST Subaccount for Project
+    if: ${{ !github.event.issue.pull_request }} && contains(github.event.issue.body, 'Project Name')
+    runs-on: ubuntu-latest
+    environment: test
+    env:
+      STAGE: test
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Extract Issue Data
+        id: extract_data
+        uses: issue-ops/parser@v4
+        with:
+          body: ${{ github.event.issue.body }}
+          issue-form-template: account_request.yml
+
+      - name: Output Issue JSON
+        id: output_issue_data
+        run: |
+          echo '${{ steps.extract_data.outputs.json }}' | jq '.' > local.json
+          echo "project-name=$(jq -r '."project-name"' local.json)" >> $GITHUB_OUTPUT
+          echo "cost-center=$(jq -r '."cost-center"' local.json)" >> $GITHUB_OUTPUT
+          echo "space-responsible=$(jq -r '."space-responsible"' local.json)" >> $GITHUB_OUTPUT
+          echo "subaccount-region=$(jq -r '."subaccount-region"[0]' local.json)" >> $GITHUB_OUTPUT
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_wrapper: false
+          terraform_version: latest
+
+      - name: Setup Terramate
+        uses: terramate-io/terramate-action@v2
+        with:
+          use_wrapper: false
+          version: latest
+
+      - name: Init Terraform for TEST stack
+        shell: bash
+        run: |
+          export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
+          terramate run -X --tags ${{ env.STAGE }} terraform init \
+             -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
+             -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
+             -backend-config="container_name=${{ secrets.CONTAINER_NAME }}" \
+             -no-color
+
+      - name: Execute deploy script for TEST stack
+        shell: bash
+        run: |
+            export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
+            export BTP_USERNAME=${{ secrets.BTP_USERNAME }}
+            export BTP_PASSWORD=${{ secrets.BTP_PASSWORD }}
+            export CF_USER=${{ secrets.BTP_USERNAME }}
+            export CF_PASSWORD=${{ secrets.BTP_PASSWORD }}
+            export TF_VAR_globalaccount=${{ secrets.GLOBALACCOUNT }}
+            export TF_VAR_project_name='${{ steps.output_issue_data.outputs.project-name }}'
+            export TF_VAR_subaccount_region=${{ steps.output_issue_data.outputs.subaccount-region }}
+            export TF_VAR_project_costcenter=${{ steps.output_issue_data.outputs.cost-center }}
+            export TF_VAR_cf_space_manager=${{ steps.output_issue_data.outputs.space-responsible }}
+            export TF_VAR_cf_space_developer=${{ steps.output_issue_data.outputs.space-responsible }}
+            export TF_VAR_cf_space_responsible=${{ steps.output_issue_data.outputs.space-responsible }}
+            terramate script run --tags ${{ env.STAGE }} -X deploy
+
+      - name: Transfer output values for issue
+        id: terraform_output
+        shell: bash
+        run: |
+          export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
+          terramate run -X --tags btp:${{ env.STAGE }} terraform output -json > output_btp.json
+          echo "cf_api_url=$(jq -r '.cf_api_url.value' output_btp.json)" >> $GITHUB_OUTPUT
+          echo "cf_org_id=$(jq -r '.cf_org_id.value' output_btp.json)" >> $GITHUB_OUTPUT
+          echo "subaccount_url=$(jq -r '.subaccount_url.value' output_btp.json)" >> $GITHUB_OUTPUT
+          terramate run -X --tags cloudfoundry:${{ env.STAGE }} terraform output -json > output_cf.json
+          echo "cf_space_url=$(jq -r '.cf_space_url.value' output_cf.json)" >> $GITHUB_OUTPUT
+
+      - name: Add comment to issue
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          body: |
+            The TEST subaccount for the project has been created successfully 🎉
+
+            Here is the relevant information for the project team:
+
+              Subaccount URL - Stage TEST: ${{ steps.terraform_output.outputs.subaccount_url }}
+              CF API URL - Stage TEST: ${{ steps.terraform_output.outputs.cf_api_url }}
+              CF Space URL - Stage TEST: ${{ steps.terraform_output.outputs.cf_space_url }}
+
+            🚀 Test your awesome apps with it!
+
+####
+## PRODUCTION
+####
+  create_subaccount_prod:
+    # Create Test subacount only if DEV and TEST was provisioned successfully
+    needs: [create_subaccount_dev,create_subaccount_test]
+    concurrency:
+     group: prod
+     cancel-in-progress: true
+
+    name: Create PROD Subaccount for Project
+    if: ${{ !github.event.issue.pull_request }} && contains(github.event.issue.body, 'Project Name')
+    runs-on: ubuntu-latest
+    environment: prod
+    env:
+      STAGE: prod
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Extract Issue Data
+        id: extract_data
+        uses: issue-ops/parser@v4
+        with:
+          body: ${{ github.event.issue.body }}
+          issue-form-template: account_request.yml
+
+      - name: Output Issue JSON
+        id: output_issue_data
+        run: |
+          echo '${{ steps.extract_data.outputs.json }}' | jq '.' > local.json
+          echo "project-name=$(jq -r '."project-name"' local.json)" >> $GITHUB_OUTPUT
+          echo "cost-center=$(jq -r '."cost-center"' local.json)" >> $GITHUB_OUTPUT
+          echo "space-responsible=$(jq -r '."space-responsible"' local.json)" >> $GITHUB_OUTPUT
+          echo "subaccount-region=$(jq -r '."subaccount-region"[0]' local.json)" >> $GITHUB_OUTPUT
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_wrapper: false
+          terraform_version: latest
+
+      - name: Setup Terramate
+        uses: terramate-io/terramate-action@v2
+        with:
+          use_wrapper: false
+          version: latest
+
+      - name: Init Terraform for PROD stack
+        shell: bash
+        run: |
+          export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
+          terramate run -X --tags ${{ env.STAGE }} terraform init \
+             -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
+             -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
+             -backend-config="container_name=${{ secrets.CONTAINER_NAME }}" \
+             -no-color
+
+      - name: Execute deploy script for PROD stack
+        shell: bash
+        run: |
+            export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
+            export BTP_USERNAME=${{ secrets.BTP_USERNAME }}
+            export BTP_PASSWORD=${{ secrets.BTP_PASSWORD }}
+            export CF_USER=${{ secrets.BTP_USERNAME }}
+            export CF_PASSWORD=${{ secrets.BTP_PASSWORD }}
+            export TF_VAR_globalaccount=${{ secrets.GLOBALACCOUNT }}
+            export TF_VAR_project_name='${{ steps.output_issue_data.outputs.project-name }}'
+            export TF_VAR_subaccount_region=${{ steps.output_issue_data.outputs.subaccount-region }}
+            export TF_VAR_project_costcenter=${{ steps.output_issue_data.outputs.cost-center }}
+            export TF_VAR_cf_space_manager=${{ steps.output_issue_data.outputs.space-responsible }}
+            export TF_VAR_cf_space_developer=${{ steps.output_issue_data.outputs.space-responsible }}
+            export TF_VAR_cf_space_responsible=${{ steps.output_issue_data.outputs.space-responsible }}
+            terramate script run --tags ${{ env.STAGE }} -X deploy
+
+      - name: Transfer output values for issue
+        id: terraform_output
+        shell: bash
+        run: |
+          export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
+          terramate run -X --tags btp:${{ env.STAGE }} terraform output -json > output_btp.json
+          echo "cf_api_url=$(jq -r '.cf_api_url.value' output_btp.json)" >> $GITHUB_OUTPUT
+          echo "cf_org_id=$(jq -r '.cf_org_id.value' output_btp.json)" >> $GITHUB_OUTPUT
+          echo "subaccount_url=$(jq -r '.subaccount_url.value' output_btp.json)" >> $GITHUB_OUTPUT
+          terramate run -X --tags cloudfoundry:${{ env.STAGE }} terraform output -json > output_cf.json
+          echo "cf_space_url=$(jq -r '.cf_space_url.value' output_cf.json)" >> $GITHUB_OUTPUT
+
+      - name: Add comment to issue
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          body: |
+            The PROD subaccount for the project has been created successfully 🎉
+
+            Here is the relevant information for the project team:
+
+              Subaccount URL - Stage PROD: ${{ steps.terraform_output.outputs.subaccount_url }}
+              CF API URL - Stage PROD: ${{ steps.terraform_output.outputs.cf_api_url }}
+              CF Space URL - Stage PROD: ${{ steps.terraform_output.outputs.cf_space_url }}
+
+            🚀 Run your awesome apps with it!
