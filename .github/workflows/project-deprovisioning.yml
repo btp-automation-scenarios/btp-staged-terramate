@@ -78,9 +78,9 @@ jobs:
             export CF_USER=${{ secrets.BTP_USERNAME }}
             export CF_PASSWORD=${{ secrets.BTP_PASSWORD }}
             export TF_VAR_globalaccount=${{ secrets.GLOBALACCOUNT }}
-            export TF_VAR_project_name='${{ steps.output_issue_data.outputs.project-name }}'
-            export TF_VAR_subaccount_region=${{ steps.output_issue_data.outputs.subaccount-region }}
-            export TF_VAR_project_costcenter=${{ steps.output_issue_data.outputs.cost-center }}
+            export TF_VAR_project_name='${{ steps.terraform_output_btp.outputs.project-name }}'
+            export TF_VAR_subaccount_region=${{ steps.terraform_output_btp.outputs.subaccount-region }}
+            export TF_VAR_project_costcenter=${{ steps.terraform_output_btp.outputs.cost-center }}
             export TF_VAR_cf_space_manager=${{ github.event.inputs.space-responsible }}
             export TF_VAR_cf_space_developer=${{ github.event.inputs.space-responsible }}
             export TF_VAR_cf_space_responsible=${{ github.event.inputs.space-responsible }}

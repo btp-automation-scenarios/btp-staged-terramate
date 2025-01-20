@@ -76,9 +76,9 @@ jobs:
             export TF_VAR_project_name='${{ steps.output_issue_data.outputs.project-name }}'
             export TF_VAR_subaccount_region=${{ steps.output_issue_data.outputs.subaccount-region }}
             export TF_VAR_project_costcenter=${{ steps.output_issue_data.outputs.cost-center }}
-            export TF_VAR_cf_space_manager=${{ github.event.inputs.space-responsible }}
-            export TF_VAR_cf_space_developer=${{ github.event.inputs.space-responsible }}
-            export TF_VAR_cf_space_responsible=${{ github.event.inputs.space-responsible }}
+            export TF_VAR_cf_space_manager=${{ steps.output_issue_data.outputs.space-responsible }}
+            export TF_VAR_cf_space_developer=${{ steps.output_issue_data.outputs.space-responsible }}
+            export TF_VAR_cf_space_responsible=${{ steps.output_issue_data.outputs.space-responsible }}
             terramate script run --tags ${{ env.STAGE }} -X deploy
 
       - name: Transfer output values for issue
@@ -90,7 +90,7 @@ jobs:
           echo "cf_api_url=$(jq -r '.cf_api_url.value' output_btp.json)" >> $GITHUB_OUTPUT
           echo "cf_org_id=$(jq -r '.cf_org_id.value' output_btp.json)" >> $GITHUB_OUTPUT
           echo "subaccount_url=$(jq -r '.subaccount_url.value' output_btp.json)" >> $GITHUB_OUTPUT
-          terramate run -X --tags cloudfoundry:${{ env.STAGE }} terraform -chdir=${{ env.PATH_TO_TFSCRIPT_CF_DEV }} output -json > output_cf.json
+          terramate run -X --tags cloudfoundry:${{ env.STAGE }} terraform output -json > output_cf.json
           echo "cf_space_url=$(jq -r '.cf_space_url.value' output_cf.json)" >> $GITHUB_OUTPUT
 
       - name: Add comment to issue
