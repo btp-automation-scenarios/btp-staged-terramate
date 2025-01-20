@@ -1,7 +1,7 @@
 // TERRAMATE: GENERATED AUTOMATICALLY DO NOT EDIT
 
 resource "cloudfoundry_space" "project_space" {
-  name = lower(replace("${var.subaccount_stage}-${var.project_name}", " ", "-"))
+  name = lower(replace("TEST-${var.project_name}", " ", "-"))
   org  = var.cf_org_id
 }
 resource "cloudfoundry_space_role" "space_manager" {

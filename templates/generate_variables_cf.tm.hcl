@@ -1,5 +1,5 @@
 # Only generta ethe variables that are not generated via output sharing
-generate_hcl "_terramate_generated_var.tf" {
+generate_hcl "_terramate_generated_variables.tf" {
   condition = tm_contains(terramate.stack.tags, "cloudfoundry")
   content {
     variable "project_name" {

@@ -3,7 +3,7 @@ generate_hcl "_terramate_generated_main.tf" {
   content {
 
     resource "cloudfoundry_space" "project_space" {
-      name = lower(replace("${var.subaccount_stage}-${var.project_name}", " ", "-"))
+      name = lower(replace("${tm_upper(terramate.stack.tags[1])}-${var.project_name}", " ", "-"))
       org  = var.cf_org_id
     }
 
