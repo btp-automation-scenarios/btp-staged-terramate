@@ -9,7 +9,7 @@ generate_hcl "_terramate_generated_provider.tf" {
         }
       }
       backend "azurerm" {
-        key = "${terramate.stack.tags[1]}.btptm.terraform.state.btptm.terraform.state"
+        key = "${terramate.stack.tags[1]}.btptm.terraform.state"
       }
     }
     provider "btp" {
