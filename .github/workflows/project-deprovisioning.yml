@@ -73,9 +73,7 @@ jobs:
             export TF_VAR_project_costcenter=${{ github.event.inputs.cost-center }}
             export TF_VAR_cf_space_manager=${{ github.event.inputs.space-responsible }}
             export TF_VAR_cf_space_developer=${{ github.event.inputs.space-responsible }}
-            export TF_VAR_cf_space_responsible=${{ github.event.inputs.space-responsible }}
             terramate script run --tags ${{ env.STAGE }} -X --reverse teardown
-
 
 ###
 # TESTING
@@ -130,7 +128,6 @@ jobs:
             export TF_VAR_project_costcenter=${{ github.event.inputs.cost-center }}
             export TF_VAR_cf_space_manager=${{ github.event.inputs.space-responsible }}
             export TF_VAR_cf_space_developer=${{ github.event.inputs.space-responsible }}
-            export TF_VAR_cf_space_responsible=${{ github.event.inputs.space-responsible }}
             terramate script run --tags ${{ env.STAGE }} -X --reverse teardown
 
 ###
@@ -184,7 +181,5 @@ jobs:
             export TF_VAR_project_name='${{ github.event.inputs.project-name }}'
             export TF_VAR_subaccount_region=${{ github.event.inputs.subaccount-region }}
             export TF_VAR_project_costcenter=${{ github.event.inputs.cost-center }}
-            export TF_VAR_cf_space_manager=${{ github.event.inputs.space-responsible }}
-            export TF_VAR_cf_space_developer=${{ github.event.inputs.space-responsible }}
-            export TF_VAR_cf_space_responsible=${{ github.event.inputs.space-responsible }}
+            export TF_VAR_cf_space_supporter=${{ github.event.inputs.space-responsible }}
             terramate script run --tags ${{ env.STAGE }} -X --reverse teardown
