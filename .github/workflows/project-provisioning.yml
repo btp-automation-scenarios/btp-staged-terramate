@@ -42,13 +42,13 @@ jobs:
           echo "space-responsible=$(jq -r '."space-responsible"' local.json)" >> $GITHUB_OUTPUT
           echo "subaccount-region=$(jq -r '."subaccount-region"[0]' local.json)" >> $GITHUB_OUTPUT
 
-      - name: Setup Terramate
+      - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
           use_wrapper: false
           version: latest
 
-      - name: Setup Terraform
+      - name: Setup Terramate
         uses: terramate-io/terramate-action@v2
         with:
           terraform_wrapper: false

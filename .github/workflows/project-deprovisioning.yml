@@ -44,7 +44,7 @@ jobs:
           terraform_version: latest
 
       - name: Setup Terramate
-        uses: hashicorp/setup-terraform@v2
+        uses: terramate-io/terramate-action@v2
         with:
           use_wrapper: false
           version: latest

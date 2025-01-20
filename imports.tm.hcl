@@ -23,9 +23,11 @@ import {
   source = "./templates/generate_main_cf.tm.hcl"
 }
 
+/*
 import {
   source = "./templates/generate_outputs_btp.tm.hcl"
 }
+*/
 
 import {
   source = "./templates/generate_outputs_cf.tm.hcl"
