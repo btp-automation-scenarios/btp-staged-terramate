@@ -8,7 +8,8 @@ terraform {
     }
   }
   backend "azurerm" {
-    key = "prod.btptm.terraform.state"
+    key      = "prod.btptm.terraform.state"
+    use_oidc = true
   }
 }
 provider "btp" {

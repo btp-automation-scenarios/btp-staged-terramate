@@ -6,6 +6,9 @@ on:
 
 permissions:
   issues: write
+  id-token: write
+  contents: read
+
 
 jobs:
 
@@ -54,10 +57,20 @@ jobs:
           use_wrapper: false
           version: latest
 
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
       - name: Init Terraform for DEV stack
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         shell: bash
         run: |
-          export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
           terramate run -X --tags ${{ env.STAGE }} terraform init \
              -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
              -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
@@ -65,9 +78,12 @@ jobs:
              -no-color
 
       - name: Execute deploy script for DEV stack
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         shell: bash
         run: |
-            export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
             export BTP_USERNAME=${{ secrets.BTP_USERNAME }}
             export BTP_PASSWORD=${{ secrets.BTP_PASSWORD }}
             export CF_USER=${{ secrets.BTP_USERNAME }}
@@ -81,10 +97,13 @@ jobs:
             terramate script run --tags ${{ env.STAGE }} -X deploy
 
       - name: Transfer output values for issue
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         id: terraform_output
         shell: bash
         run: |
-          export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
           terramate run -X --tags btp:${{ env.STAGE }} terraform output -json > output_btp.json
           echo "cf_api_url=$(jq -r '.cf_api_url.value' output_btp.json)" >> $GITHUB_OUTPUT
           echo "cf_org_id=$(jq -r '.cf_org_id.value' output_btp.json)" >> $GITHUB_OUTPUT
@@ -154,10 +173,20 @@ jobs:
           use_wrapper: false
           version: latest
 
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
       - name: Init Terraform for TEST stack
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         shell: bash
         run: |
-          export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
           terramate run -X --tags ${{ env.STAGE }} terraform init \
              -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
              -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
@@ -165,9 +194,12 @@ jobs:
              -no-color
 
       - name: Execute deploy script for TEST stack
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         shell: bash
         run: |
-            export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
             export BTP_USERNAME=${{ secrets.BTP_USERNAME }}
             export BTP_PASSWORD=${{ secrets.BTP_PASSWORD }}
             export CF_USER=${{ secrets.BTP_USERNAME }}
@@ -181,10 +213,13 @@ jobs:
             terramate script run --tags ${{ env.STAGE }} -X deploy
 
       - name: Transfer output values for issue
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         id: terraform_output
         shell: bash
         run: |
-          export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
           terramate run -X --tags btp:${{ env.STAGE }} terraform output -json > output_btp.json
           echo "cf_api_url=$(jq -r '.cf_api_url.value' output_btp.json)" >> $GITHUB_OUTPUT
           echo "cf_org_id=$(jq -r '.cf_org_id.value' output_btp.json)" >> $GITHUB_OUTPUT
@@ -256,10 +291,20 @@ jobs:
           use_wrapper: false
           version: latest
 
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
       - name: Init Terraform for PROD stack
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         shell: bash
         run: |
-          export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
           terramate run -X --tags ${{ env.STAGE }} terraform init \
              -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
              -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
@@ -267,9 +312,12 @@ jobs:
              -no-color
 
       - name: Execute deploy script for PROD stack
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         shell: bash
         run: |
-            export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
             export BTP_USERNAME=${{ secrets.BTP_USERNAME }}
             export BTP_PASSWORD=${{ secrets.BTP_PASSWORD }}
             export CF_USER=${{ secrets.BTP_USERNAME }}
@@ -282,10 +330,13 @@ jobs:
             terramate script run --tags ${{ env.STAGE }} -X deploy
 
       - name: Transfer output values for issue
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         id: terraform_output
         shell: bash
         run: |
-          export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
           terramate run -X --tags btp:${{ env.STAGE }} terraform output -json > output_btp.json
           echo "cf_api_url=$(jq -r '.cf_api_url.value' output_btp.json)" >> $GITHUB_OUTPUT
           echo "cf_org_id=$(jq -r '.cf_org_id.value' output_btp.json)" >> $GITHUB_OUTPUT

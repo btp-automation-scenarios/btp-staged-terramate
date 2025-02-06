@@ -19,6 +19,10 @@ on:
         required: true
         default: 'christian.lechner@sap.com'
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
 ###
 # DEVELOPMENT
@@ -49,10 +53,20 @@ jobs:
           use_wrapper: false
           version: latest
 
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
       - name: Init Terraform for DEV stack
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         shell: bash
         run: |
-          export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
           terramate run -X --tags ${{ env.STAGE }} terraform init \
              -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
              -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
@@ -60,9 +74,12 @@ jobs:
              -no-color
 
       - name: Terraform Destroy for DEV stack
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         shell: bash
         run: |
-            export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
             export BTP_USERNAME=${{ secrets.BTP_USERNAME }}
             export BTP_PASSWORD=${{ secrets.BTP_PASSWORD }}
             export CF_USER=${{ secrets.BTP_USERNAME }}
@@ -104,10 +121,20 @@ jobs:
           use_wrapper: false
           version: latest
 
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
       - name: Init Terraform for TEST stack
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         shell: bash
         run: |
-          export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
           terramate run -X --tags ${{ env.STAGE }} terraform init \
              -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
              -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
@@ -115,9 +142,12 @@ jobs:
              -no-color
 
       - name: Terraform Destroy for TEST stack
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         shell: bash
         run: |
-            export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
             export BTP_USERNAME=${{ secrets.BTP_USERNAME }}
             export BTP_PASSWORD=${{ secrets.BTP_PASSWORD }}
             export CF_USER=${{ secrets.BTP_USERNAME }}
@@ -159,10 +189,20 @@ jobs:
           use_wrapper: false
           version: latest
 
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
       - name: Init Terraform for PROD stack
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         shell: bash
         run: |
-          export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
           terramate run -X --tags ${{ env.STAGE }} terraform init \
              -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
              -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
@@ -170,9 +210,12 @@ jobs:
              -no-color
 
       - name: Terraform Destroy for PROD stack
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         shell: bash
         run: |
-            export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
             export BTP_USERNAME=${{ secrets.BTP_USERNAME }}
             export BTP_PASSWORD=${{ secrets.BTP_PASSWORD }}
             export CF_USER=${{ secrets.BTP_USERNAME }}
