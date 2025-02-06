@@ -8,7 +8,8 @@ terraform {
     }
   }
   backend "azurerm" {
-    key = "prod.cftm.terraform.state"
+    key      = "prod.cftm.terraform.state"
+    use_oidc = true
   }
 }
 provider "cloudfoundry" {

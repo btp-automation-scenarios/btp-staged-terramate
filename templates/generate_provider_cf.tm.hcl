@@ -9,7 +9,8 @@ generate_hcl "_terramate_generated_provider.tf" {
         }
       }
       backend "azurerm" {
-        key = "${terramate.stack.tags[1]}.cftm.terraform.state"
+        key      = "${terramate.stack.tags[1]}.cftm.terraform.state"
+        use_oidc = true
       }
     }
     provider "cloudfoundry" {
